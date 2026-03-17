@@ -135,14 +135,28 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
 
 
 def extract_zip(zip_bytes, extract_dir):
-    """Extract a Notion zip and return the path to the HTML file inside."""
+    """Extract a Notion zip (including zip-within-zip) and return the HTML path."""
     zip_path = os.path.join(extract_dir, "upload.zip")
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
-    with zipfile.ZipFile(zip_path, 'r') as z:
-        z.extractall(extract_dir)
+
+    # Repeatedly extract any zip files found until none remain
+    zips_to_extract = [zip_path]
+    while zips_to_extract:
+        for zp in zips_to_extract:
+            with zipfile.ZipFile(zp, 'r') as z:
+                z.extractall(extract_dir)
+            os.remove(zp)
+        # Check if extraction produced any more zip files
+        zips_to_extract = [
+            os.path.join(root, fname)
+            for root, _, files in os.walk(extract_dir)
+            for fname in files
+            if fname.endswith('.zip')
+        ]
+
     # Find the HTML file — Notion always produces exactly one
-    for root, dirs, files in os.walk(extract_dir):
+    for root, _, files in os.walk(extract_dir):
         for fname in files:
             if fname.endswith('.html'):
                 return os.path.join(root, fname)
