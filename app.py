@@ -11,24 +11,7 @@ from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 import tempfile
 
-import os
-import subprocess
 
-# --- AUTOMATIC PLAYWRIGHT INSTALL FOR CLOUD ---
-def install_playwright():
-    try:
-        # Check if chromium is already accessible
-        subprocess.run(["playwright", "install", "chromium"], check=True)
-    except Exception as e:
-        st.error(f"Error installing Playwright browsers: {e}")
-
-# Run the install if we are on a Linux/Cloud environment
-if sys.platform != "win32":
-    # We only want to run this once per session
-    if "playwright_installed" not in st.session_state:
-        with st.spinner("Installing browser dependencies..."):
-            install_playwright()
-            st.session_state.playwright_installed = True
 # --- Core Processing Logic ---
 async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_text):
     with open(input_html_path, 'r', encoding='utf-8') as f:
