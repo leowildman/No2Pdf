@@ -6,41 +6,17 @@ import tempfile
 import subprocess
 import zipfile
 import shutil
-from datetime import date
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
-async def generate_pdf(
-    input_html_path, output_pdf_path,
-    header_left, header_centre, header_right,
-    footer_left, footer_right,
-    suppress_first_page_hf,
-    page_size, landscape,
-    margin_top, margin_bottom, margin_left, margin_right,
-    body_font_size, table_font_size, line_height,
-    pdf_title, pdf_author,
-):
+async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_text):
     with open(input_html_path, 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
 
-    # Inject PDF metadata
-    if pdf_title:
-        tag = soup.new_tag('meta'); tag['name'] = 'title'; tag['content'] = pdf_title
-        soup.head.append(tag)
-    if pdf_author:
-        tag = soup.new_tag('meta'); tag['name'] = 'author'; tag['content'] = pdf_author
-        soup.head.append(tag)
-
     notion_grey = "#91918e"
-
-    # Only inject font-size/line-height overrides if the user has changed
-    # from the "Notion default" sentinel values (0 = inherit)
-    body_font_css  = f"font-size: {body_font_size}pt !important;" if body_font_size  > 0 else ""
-    table_font_css = f"font-size: {table_font_size}pt !important;" if table_font_size > 0 else ""
-    line_height_css = f"line-height: {line_height} !important;" if line_height > 0 else ""
 
     custom_styles = f"""
     <style>
@@ -70,7 +46,7 @@ async def generate_pdf(
             td, th {{
                 border: 1px solid rgba(55, 53, 47, 0.09) !important;
                 padding: 6px !important;
-                {table_font_css}
+                /* Inherit body font size so table text matches body — same as Notion */
                 white-space: pre-wrap !important; 
                 word-wrap: break-word !important;
                 overflow-wrap: break-word !important;
@@ -90,8 +66,6 @@ async def generate_pdf(
                    in Playwright without needing a network font load */
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
                 color: rgb(55, 53, 47);
-                {body_font_css}
-                {line_height_css}
             }}
             img, figure {{ break-inside: avoid; max-width: 100% !important; }}
         }}
@@ -111,9 +85,9 @@ async def generate_pdf(
         paragraphs = callout.find_all('p')
         for i, p_tag in enumerate(paragraphs):
             existing = p_tag.get('style', '').rstrip(';')
-            mt = '0'    if i == 0                   else '0.6em'
-            mb = '0'    if i == len(paragraphs) - 1 else '0.6em'
-            p_tag['style'] = f"{existing}; margin-top:{mt}; margin-bottom:{mb};"
+            margin_top    = '0'     if i == 0                    else '0.6em'
+            margin_bottom = '0'     if i == len(paragraphs) - 1  else '0.6em'
+            p_tag['style'] = f"{existing}; margin-top:{margin_top}; margin-bottom:{margin_bottom};"
 
     # Write the modified soup back to disk in the same directory as the
     # original so that relative image paths (./images/...) still resolve.
@@ -139,82 +113,35 @@ async def generate_pdf(
         }''')
 
         # Prevent tables that fit on a single page from splitting across pages.
-        # Compute printable height from page size and margins.
-        page_heights_mm = {"A4": 297, "Letter": 279, "A3": 420}
-        page_widths_mm  = {"A4": 210, "Letter": 216, "A3": 297}
-        h_mm = page_widths_mm[page_size] if landscape else page_heights_mm[page_size]
-        printable_h_px = (h_mm - margin_top - margin_bottom) * (96 / 25.4)
-
-        await page.evaluate(f'''() => {{
-            const MAX_H = {printable_h_px:.1f};
-            document.querySelectorAll('table').forEach(table => {{
-                if (table.getBoundingClientRect().height <= MAX_H) {{
+        # A4 at 96dpi = 1123px tall; minus 80px top + 80px bottom margins = 963px
+        # printable height. Only apply break-inside:avoid to tables smaller than
+        # this — taller tables must be allowed to paginate row by row.
+        await page.evaluate('''() => {
+            const MAX_H = 963;
+            document.querySelectorAll('table').forEach(table => {
+                if (table.getBoundingClientRect().height <= MAX_H) {
                     table.style.breakInside = 'avoid';
                     table.style.pageBreakInside = 'avoid';
-                }}
-            }});
-        }}''')
+                }
+            });
+        }''')
 
-        # Build header/footer templates with left/centre/right slots
-        shared_style = f"font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 10px; color: {notion_grey}; box-sizing: border-box;"
-        ml = f"{margin_left}mm"
-        mr = f"{margin_right}mm"
-
-        def three_col(left, centre, right):
-            return (
-                f'<div style="{shared_style} width:100%; padding:0 {mr} 0 {ml}; '
-                f'display:flex; justify-content:space-between; align-items:center;">'
-                f'<span style="flex:1; text-align:left;">{left}</span>'
-                f'<span style="flex:1; text-align:center;">{centre}</span>'
-                f'<span style="flex:1; text-align:right;">{right}</span>'
-                f'</div>'
-            )
-
-        page_num = 'Page <span class="pageNumber"></span> of <span class="totalPages"></span>'
-        footer_right_full = f"{footer_right} | {page_num}" if footer_right.strip() else page_num
-
-        header_html = three_col(header_left, header_centre, header_right)
-        footer_html  = three_col(footer_left, "", footer_right_full)
-
-        # Suppress header/footer on page 1 by covering the margin area with
-        # a white fixed-position block — only affects the first page since
-        # subsequent pages scroll past it.
-        if suppress_first_page_hf:
-            await page.evaluate(f'''() => {{
-                const s = document.createElement('style');
-                s.textContent = `@media print {{
-                    .hf-suppress {{ position:fixed; left:0; right:0; background:white; z-index:99999; }}
-                    .hf-suppress-top    {{ top:0;    height:{margin_top}mm; }}
-                    .hf-suppress-bottom {{ bottom:0; height:{margin_bottom}mm; }}
-                }}`;
-                document.head.appendChild(s);
-                const t = document.createElement('div');
-                t.className = 'hf-suppress hf-suppress-top';
-                const b = document.createElement('div');
-                b.className = 'hf-suppress hf-suppress-bottom';
-                document.body.prepend(t);
-                document.body.appendChild(b);
-            }}''')
+        shared_style = f"font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 10px; color: {notion_grey};"
 
         await page.pdf(
             path=output_pdf_path,
-            format=page_size,
-            landscape=landscape,
+            format="A4",
             print_background=True,
             display_header_footer=True,
-            header_template=header_html,
-            footer_template=footer_html,
-            margin={
-                "top":    f"{margin_top}mm",
-                "bottom": f"{margin_bottom}mm",
-                "left":   f"{margin_left}mm",
-                "right":  f"{margin_right}mm",
-            },
+            header_template=f'<div style="{shared_style} width: 100%; text-align: center; margin: 0 40px;">{header_text}</div>',
+            footer_template=f'''
+                <div style="{shared_style} width: 100%; padding: 0 40px; display: flex; justify-content: space-between;">
+                    <span>{footer_text}</span>
+                    <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+                </div>''',
+            margin={"top": "80px", "bottom": "80px", "left": "40px", "right": "40px"}
         )
         await browser.close()
-
-    if os.path.exists(modified_html_path):
-        os.remove(modified_html_path)
 
 
 def extract_zip(zip_bytes, extract_dir):
@@ -247,49 +174,13 @@ def extract_zip(zip_bytes, extract_dir):
 
 # --- Streamlit WebUI ---
 st.set_page_config(page_title="Notion Engineering PDF Tool", page_icon="📑")
+
 st.title("📑 Notion to Engineering PDF")
 
-today = date.today().strftime("%-d %B %Y") if sys.platform != "win32" else date.today().strftime("%d %B %Y")
-
 with st.sidebar:
-    st.header("Header")
-    header_left_input   = st.text_input("Left",   "", key="hl")
-    header_centre_input = st.text_input("Centre", "EE22005: Engineering Practice and Design", key="hc")
-    header_right_input  = st.text_input("Right",  "", key="hr")
-
-    st.header("Footer")
-    footer_left_input  = st.text_input("Left",  "Username - University of Bath", key="fl")
-    footer_right_input = st.text_input("Right (page number auto-appended)", "", key="fr")
-    suppress_hf_p1     = st.toggle("Suppress on page 1", value=False,
-                                    help="Hides header & footer on the cover page.")
-
-    st.divider()
-    st.header("Layout")
-    page_size_input = st.selectbox("Page size", ["A4", "Letter", "A3"], index=0)
-    landscape_input = st.toggle("Landscape", value=False)
-    st.markdown("**Margins (mm)**")
-    col1, col2 = st.columns(2)
-    with col1:
-        margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=20)
-        margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=15)
-    with col2:
-        margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=20)
-        margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=15)
-
-    st.divider()
-    st.header("Typography")
-    st.caption("Set to 0 to inherit Notion's defaults.")
-    body_font_input   = st.slider("Body font size (pt)",  0, 14, 0)
-    table_font_input  = st.slider("Table font size (pt)", 0, 14, 0)
-    line_height_input = st.slider("Line height", 0.0, 2.0, 0.0, step=0.1,
-                                   format="%.1f")
-
-    st.divider()
-    st.header("Output")
-    pdf_title_input  = st.text_input("PDF title (metadata)",  "")
-    pdf_author_input = st.text_input("PDF author (metadata)", "")
-    filename_input   = st.text_input("Output filename", "",
-                                      placeholder="Leave blank to use document name")
+    st.header("Report Configuration")
+    header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
+    footer_input = st.text_input("Footer Text", "Username - University of Bath")
 
 uploaded_file = st.file_uploader("Upload Notion HTML or ZIP", type=['html', 'zip'])
 
@@ -313,35 +204,14 @@ if uploaded_file is not None:
                     if html_path is None:
                         st.error("No HTML file found inside the ZIP.")
                         st.stop()
-                    default_name = os.path.basename(html_path).replace('.html', '')
+                    output_name = os.path.basename(html_path).replace('.html', '') + ".pdf"
                 else:
                     html_path = os.path.join(tmp_dir, uploaded_file.name)
                     with open(html_path, 'wb') as f:
                         f.write(uploaded_file.getvalue())
-                    default_name = uploaded_file.name.replace('.html', '')
+                    output_name = uploaded_file.name.replace('.html', '') + ".pdf"
 
-                output_name = (filename_input.strip() or default_name) + ".pdf"
-
-                asyncio.run(generate_pdf(
-                    html_path, output_path,
-                    header_left=header_left_input,
-                    header_centre=header_centre_input,
-                    header_right=header_right_input,
-                    footer_left=footer_left_input,
-                    footer_right=footer_right_input,
-                    suppress_first_page_hf=suppress_hf_p1,
-                    page_size=page_size_input,
-                    landscape=landscape_input,
-                    margin_top=margin_top_input,
-                    margin_bottom=margin_bottom_input,
-                    margin_left=margin_left_input,
-                    margin_right=margin_right_input,
-                    body_font_size=body_font_input,
-                    table_font_size=table_font_input,
-                    line_height=line_height_input,
-                    pdf_title=pdf_title_input,
-                    pdf_author=pdf_author_input,
-                ))
+                asyncio.run(generate_pdf(html_path, output_path, header_input, footer_input))
 
                 with open(output_path, "rb") as f:
                     st.success("PDF Generation Complete!")
