@@ -262,7 +262,7 @@ _defaults = dict(
     hl='', hc='', hr='',
     fl='', fr='',
     suppress_p1=False,
-    page_size_idx=0,
+    page_size_sel='A4',
     landscape=False,
     margin_top=21, margin_bottom=21,
     margin_left=11, margin_right=11,
@@ -275,23 +275,22 @@ for _k, _v in _defaults.items():
 
 with st.sidebar:
     st.header("Header")
-    header_left_input   = st.text_input("Left",   value=st.session_state['hl'], key="hl")
-    header_centre_input = st.text_input("Centre", value=st.session_state['hc'], key="hc")
-    header_right_input  = st.text_input("Right",  value=st.session_state['hr'], key="hr")
+    header_left_input   = st.text_input("Left",   key="hl")
+    header_centre_input = st.text_input("Centre", key="hc")
+    header_right_input  = st.text_input("Right",  key="hr")
 
     st.header("Footer")
-    footer_left_input  = st.text_input("Left",                              value=st.session_state['fl'], key="fl")
-    footer_right_input = st.text_input("Right (page number auto-appended)", value=st.session_state['fr'], key="fr")
-    suppress_hf_p1     = st.toggle("Suppress on page 1", value=st.session_state['suppress_p1'],
-                                    key="suppress_p1",
+    footer_left_input  = st.text_input("Left",                              key="fl")
+    footer_right_input = st.text_input("Right (page number auto-appended)", key="fr")
+    suppress_hf_p1     = st.toggle("Suppress on page 1", key="suppress_p1",
                                     help="Hides header & footer on the cover page.")
 
     st.divider()
     with st.expander("📐 Layout", expanded=False):
         page_size_input = st.selectbox("Page size", ["A4", "Letter", "A3"],
-                                        index=st.session_state['page_size_idx'],
-                                        key="page_size_idx")
-        landscape_input = st.toggle("Landscape", value=st.session_state['landscape'], key="landscape")
+                                        index=["A4", "Letter", "A3"].index(st.session_state.get('page_size_sel', 'A4')),
+                                        key="page_size_sel")
+        landscape_input = st.toggle("Landscape", key="landscape")
 
         st.markdown("**Margin preset**")
         _pc = st.columns(3)
@@ -307,25 +306,22 @@ with st.sidebar:
         st.markdown("**Margins (mm)**")
         _c1, _c2 = st.columns(2)
         with _c1:
-            margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=st.session_state['margin_top'],    key="margin_top")
-            margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=st.session_state['margin_left'],   key="margin_left")
+            margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, key="margin_top")
+            margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, key="margin_left")
         with _c2:
-            margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=st.session_state['margin_bottom'], key="margin_bottom")
-            margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=st.session_state['margin_right'],  key="margin_right")
+            margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, key="margin_bottom")
+            margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, key="margin_right")
 
     with st.expander("🔤 Typography", expanded=False):
         st.caption("Leave at 0 to use Notion's defaults.")
-        body_font_input   = st.slider("Body font size (pt)",  0, 14, value=st.session_state['body_font'],   key="body_font")
-        table_font_input  = st.slider("Table font size (pt)", 0, 14, value=st.session_state['table_font'],  key="table_font")
-        line_height_input = st.slider("Line height", 0.0, 2.0, value=st.session_state['line_height'],
-                                       step=0.1, format="%.1f", key="line_height")
+        body_font_input   = st.slider("Body font size (pt)",  0, 14, key="body_font")
+        table_font_input  = st.slider("Table font size (pt)", 0, 14, key="table_font")
+        line_height_input = st.slider("Line height", 0.0, 2.0, step=0.1, format="%.1f", key="line_height")
 
     with st.expander("📁 Output", expanded=False):
-        pdf_title_input  = st.text_input("PDF title (metadata)",  value=st.session_state['pdf_title'],  key="pdf_title")
-        pdf_author_input = st.text_input("PDF author (metadata)", value=st.session_state['pdf_author'], key="pdf_author")
-        filename_input   = st.text_input("Output filename", value=st.session_state['filename'],
-                                          key="filename",
-                                          placeholder="Leave blank to use document name")
+        pdf_title_input  = st.text_input("PDF title (metadata)",  key="pdf_title")
+        pdf_author_input = st.text_input("PDF author (metadata)", key="pdf_author")
+        filename_input   = st.text_input("Output filename", key="filename", placeholder="Leave blank to use document name")
 
     st.divider()
     if st.button("↺ Reset to defaults", use_container_width=True):
