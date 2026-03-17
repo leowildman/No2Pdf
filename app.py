@@ -264,7 +264,7 @@ _defaults = dict(
     suppress_p1=False,
     page_size_sel='A4',
     landscape=False,
-    margin_top=21, margin_bottom=21,
+    margin_top=25, margin_bottom=25,
     margin_left=11, margin_right=11,
     body_font=0, table_font=0, line_height=0.0,
     pdf_title='', pdf_author='', filename='',
