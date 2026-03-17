@@ -18,6 +18,10 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
 
     custom_styles = f"""
     <style>
+        /* Noto Color Emoji is loaded as a web font so emoji render correctly
+           on Linux servers where the system emoji font is not installed */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+
         @media print {{
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
 
@@ -131,7 +135,7 @@ st.title("📑 Notion to Engineering PDF")
 with st.sidebar:
     st.header("Report Configuration")
     header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
-    footer_input = st.text_input("Footer Text", "Leo Wildman (ljrw20) - University of Bath")
+    footer_input = st.text_input("Footer Text", "Username - University of Bath")
 
 uploaded_file = st.file_uploader("Upload Notion HTML", type=['html'])
 

@@ -2,3 +2,4 @@ playwright
 libgbm1
 libnss3
 libasound2
+fonts-noto-color-emoji
