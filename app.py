@@ -4,8 +4,6 @@ import sys
 import os
 import tempfile
 import subprocess
-import zipfile
-import shutil
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
@@ -75,13 +73,20 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         soup.head.append(BeautifulSoup(custom_styles, 'html.parser'))
 
     # Fix callout paragraph spacing by preprocessing the HTML directly.
+    # CSS approaches fail because Notion's own .callout p { margin:0 } rule
+    # and the inline white-space:pre-wrap on the figure interact unpredictably
+    # in Chromium's print renderer. Injecting inline styles here bypasses all
+    # of that — inline styles on the element itself are applied unconditionally.
     for callout in soup.find_all(class_='callout'):
+        # Strip white-space:pre-wrap from the figure's inline style so it
+        # doesn't suppress paragraph spacing inside
         style = callout.get('style', '')
         for variant in ('white-space:pre-wrap;', 'white-space: pre-wrap;',
                         'white-space:pre-wrap', 'white-space: pre-wrap'):
             style = style.replace(variant, '')
         callout['style'] = style.strip()
 
+        # Inject margin directly onto each <p> inside the callout
         paragraphs = callout.find_all('p')
         for i, p_tag in enumerate(paragraphs):
             existing = p_tag.get('style', '').rstrip(';')
@@ -93,13 +98,10 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         browser = await p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
         page = await browser.new_page()
 
-        # Use goto with a file:// URL so relative image paths resolve correctly
-        await page.goto(f"file://{input_html_path}", wait_until="networkidle")
-
-        # Re-inject styles after goto (set_content isn't used here)
-        await page.add_style_tag(content=custom_styles)
+        await page.set_content(str(soup), wait_until="networkidle")
 
         # Strip inline pixel widths Notion injects directly onto td/th elements.
+        # (The min-width class rule is handled by the CSS above.)
         await page.evaluate('''() => {
             document.querySelectorAll('table, th, td, col, colgroup').forEach(el => {
                 el.style.width = '';
@@ -125,35 +127,6 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         )
         await browser.close()
 
-
-def extract_zip(zip_bytes, extract_dir):
-    """Extract a Notion zip (including zip-within-zip) and return the HTML path."""
-    zip_path = os.path.join(extract_dir, "upload.zip")
-    with open(zip_path, 'wb') as f:
-        f.write(zip_bytes)
-
-    # Repeatedly extract until no more zips remain (handles nested zips)
-    zips_to_extract = [zip_path]
-    while zips_to_extract:
-        for zp in zips_to_extract:
-            with zipfile.ZipFile(zp, 'r') as z:
-                z.extractall(extract_dir)
-            os.remove(zp)
-        zips_to_extract = [
-            os.path.join(root, fname)
-            for root, _, files in os.walk(extract_dir)
-            for fname in files
-            if fname.endswith('.zip')
-        ]
-
-    # Find the HTML file — Notion always produces exactly one
-    for root, _, files in os.walk(extract_dir):
-        for fname in files:
-            if fname.endswith('.html'):
-                return os.path.join(root, fname)
-    return None
-
-
 # --- Streamlit WebUI ---
 st.set_page_config(page_title="Notion Engineering PDF Tool", page_icon="📑")
 
@@ -164,7 +137,7 @@ with st.sidebar:
     header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
     footer_input = st.text_input("Footer Text", "Username - University of Bath")
 
-uploaded_file = st.file_uploader("Upload Notion HTML or ZIP", type=['html', 'zip'])
+uploaded_file = st.file_uploader("Upload Notion HTML", type=['html'])
 
 if uploaded_file is not None:
     if st.button("Generate & Download PDF", type="primary"):
@@ -176,34 +149,27 @@ if uploaded_file is not None:
                     st.error(f"Browser installation failed: {e}")
 
         with st.spinner("Rendering report..."):
-            # Use a persistent temp dir so images stay accessible during render
-            tmp_dir = tempfile.mkdtemp()
-            output_path = os.path.join(tmp_dir, "notion_report.pdf")
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_html:
+                tmp_html.write(uploaded_file.getvalue())
+                tmp_path = tmp_html.name
+
+            output_path = "notion_report.pdf"
 
             try:
-                if uploaded_file.name.endswith('.zip'):
-                    html_path = extract_zip(uploaded_file.getvalue(), tmp_dir)
-                    if html_path is None:
-                        st.error("No HTML file found inside the ZIP.")
-                        st.stop()
-                    output_name = os.path.basename(html_path).replace('.html', '') + ".pdf"
-                else:
-                    html_path = os.path.join(tmp_dir, uploaded_file.name)
-                    with open(html_path, 'wb') as f:
-                        f.write(uploaded_file.getvalue())
-                    output_name = uploaded_file.name.replace('.html', '') + ".pdf"
-
-                asyncio.run(generate_pdf(html_path, output_path, header_input, footer_input))
+                asyncio.run(generate_pdf(tmp_path, output_path, header_input, footer_input))
 
                 with open(output_path, "rb") as f:
                     st.success("PDF Generation Complete!")
                     st.download_button(
                         label="Download PDF",
                         data=f,
-                        file_name=output_name,
+                        file_name=f"{uploaded_file.name.replace('.html', '')}.pdf",
                         mime="application/pdf"
                     )
             except Exception as e:
                 st.error(f"Processing Error: {e}")
             finally:
-                shutil.rmtree(tmp_dir, ignore_errors=True)
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                if os.path.exists(output_path):
+                    os.remove(output_path)
