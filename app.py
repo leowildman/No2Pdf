@@ -22,6 +22,12 @@ async def generate_pdf(
     body_font_size, table_font_size, line_height,
     pdf_title, pdf_author,
 ):
+    # Safety clamp — prevents bad margin values from causing layout clipping
+    margin_top    = max(5, int(margin_top))
+    margin_bottom = max(5, int(margin_bottom))
+    margin_left   = max(5, int(margin_left))
+    margin_right  = max(5, int(margin_right))
+
     with open(input_html_path, 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
 
@@ -273,7 +279,7 @@ for _k, _v in DEFAULTS.items():
     if _k not in st.session_state:
         st.session_state[_k] = _v
 
-st.set_page_config(page_title="Notion to PDF", page_icon="📑", layout="wide")
+st.set_page_config(page_title="Notion to PDF", page_icon="📑")
 
 st.title("📑 Notion to PDF")
 st.caption("Convert any Notion HTML export to a clean, print-ready PDF.")
@@ -315,18 +321,17 @@ with st.sidebar:
         st.markdown("**Margins (mm)**")
         _c1, _c2 = st.columns(2)
         with _c1:
-            margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, key="margin_top")
-            margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, key="margin_left")
+            margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=st.session_state["margin_top"],    key="margin_top")
+            margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=st.session_state["margin_left"],   key="margin_left")
         with _c2:
-            margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, key="margin_bottom")
-            margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, key="margin_right")
+            margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=st.session_state["margin_bottom"], key="margin_bottom")
+            margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=st.session_state["margin_right"],  key="margin_right")
 
     with st.expander("🔤 Typography", expanded=False):
         st.caption("Leave at 0 to use Notion's defaults.")
-        body_font_input   = st.slider("Body font size (pt)",  0, 14, key="body_font")
-        table_font_input  = st.slider("Table font size (pt)", 0, 14, key="table_font")
-        line_height_input = st.slider("Line height", 0.0, 2.0, step=0.1,
-                                       format="%.1f", key="line_height")
+        body_font_input   = st.slider("Body font size (pt)",  0, 14, value=st.session_state["body_font"],   key="body_font")
+        table_font_input  = st.slider("Table font size (pt)", 0, 14, value=st.session_state["table_font"],  key="table_font")
+        line_height_input = st.slider("Line height", 0.0, 2.0, value=st.session_state["line_height"], step=0.1, format="%.1f", key="line_height")
 
     with st.expander("📁 Output", expanded=False):
         pdf_title_input  = st.text_input("PDF title (metadata)",  key="pdf_title")
