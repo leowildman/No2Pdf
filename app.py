@@ -91,8 +91,8 @@ st.caption("Custom exporter for University of Bath - EE22005")
 
 with st.sidebar:
     st.header("Settings")
-    header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
-    footer_input = st.text_input("Footer Text", "Leo Wildman (ljrw20) - University of Bath")
+    header_input = st.text_input("Header Text", "")
+    footer_input = st.text_input("Footer Text", "")
 
 uploaded_file = st.file_uploader("Upload your Notion HTML export", type=['html'])
 
