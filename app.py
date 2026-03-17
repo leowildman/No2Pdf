@@ -1,14 +1,15 @@
 import streamlit as st
 import asyncio
 import sys
+import os
+
+# Only apply the Windows-specific fix if actually on Windows
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 import tempfile
-import os
-
-# --- MANDATORY WINDOWS FIX ---
-if sys.platform == 'win32':
-    asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 # --- Core Processing Logic ---
 async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_text):
     with open(input_html_path, 'r', encoding='utf-8') as f:
