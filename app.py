@@ -85,27 +85,19 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         paragraphs = callout.find_all('p')
         for i, p_tag in enumerate(paragraphs):
             existing = p_tag.get('style', '').rstrip(';')
-            margin_top    = '0'    if i == 0                   else '0.6em'
-            margin_bottom = '0'    if i == len(paragraphs) - 1 else '0.6em'
+            margin_top    = '0'     if i == 0                    else '0.6em'
+            margin_bottom = '0'     if i == len(paragraphs) - 1  else '0.6em'
             p_tag['style'] = f"{existing}; margin-top:{margin_top}; margin-bottom:{margin_bottom};"
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
         page = await browser.new_page()
 
-        # Load the HTML from its directory so relative image paths resolve correctly
-        html_dir = os.path.dirname(os.path.abspath(input_html_path))
+        # Use goto with a file:// URL so relative image paths resolve correctly
         await page.goto(f"file://{input_html_path}", wait_until="networkidle")
 
-        # Inject our custom styles after page load
+        # Re-inject styles after goto (set_content isn't used here)
         await page.add_style_tag(content=custom_styles)
-
-        # Apply callout fixes via JS (since we're using goto instead of set_content)
-        await page.evaluate('''() => {
-            document.querySelectorAll('.callout').forEach(callout => {
-                callout.style.whiteSpace = 'normal';
-            });
-        }''')
 
         # Strip inline pixel widths Notion injects directly onto td/th elements.
         await page.evaluate('''() => {
@@ -140,14 +132,13 @@ def extract_zip(zip_bytes, extract_dir):
     with open(zip_path, 'wb') as f:
         f.write(zip_bytes)
 
-    # Repeatedly extract any zip files found until none remain
+    # Repeatedly extract until no more zips remain (handles nested zips)
     zips_to_extract = [zip_path]
     while zips_to_extract:
         for zp in zips_to_extract:
             with zipfile.ZipFile(zp, 'r') as z:
                 z.extractall(extract_dir)
             os.remove(zp)
-        # Check if extraction produced any more zip files
         zips_to_extract = [
             os.path.join(root, fname)
             for root, _, files in os.walk(extract_dir)
@@ -171,7 +162,7 @@ st.title("📑 Notion to Engineering PDF")
 with st.sidebar:
     st.header("Report Configuration")
     header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
-    footer_input = st.text_input("Footer Text", "Leo Wildman (ljrw20) - University of Bath")
+    footer_input = st.text_input("Footer Text", "Username - University of Bath")
 
 uploaded_file = st.file_uploader("Upload Notion HTML or ZIP", type=['html', 'zip'])
 
@@ -185,7 +176,7 @@ if uploaded_file is not None:
                     st.error(f"Browser installation failed: {e}")
 
         with st.spinner("Rendering report..."):
-            # Use a persistent temp dir so images remain accessible during render
+            # Use a persistent temp dir so images stay accessible during render
             tmp_dir = tempfile.mkdtemp()
             output_path = os.path.join(tmp_dir, "notion_report.pdf")
 
