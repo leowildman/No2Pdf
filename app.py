@@ -19,31 +19,38 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
     notion_grey = "#91918e"
     
     # CSS Customisation for Notion Aesthetic
+    # CSS Customisation for Notion Aesthetic on Linux
     custom_styles = f"""
     <style>
+        /* Import Notion's default font to fix Linux missing fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        
         @media print {{
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
             
-            /* Engineering Table Style: No wrapping, border sync */
             table {{ 
                 width: 100% !important; 
-                table-layout: auto !important; 
-                white-space: nowrap !important; 
+                table-layout: fixed !important; /* Fixed prevents columns from exploding */
                 border-collapse: collapse !important;
             }}
 
             td, th {{
                 border: 1px solid rgba(55, 53, 47, 0.09) !important;
                 padding: 6px !important;
-                font-size: 9pt !important;
+                font-size: 8.5pt !important;
+                word-wrap: break-word !important; /* Allows long paragraphs to wrap nicely */
+                white-space: normal !important; 
             }}
 
+            /* Prevent rows from splitting across two pages */
+            tr {{ break-inside: avoid !important; }}
+
             body {{ 
-                font-family: ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+                font-family: 'Inter', ui-sans-serif, -apple-system, sans-serif !important;
                 color: rgb(55, 53, 47); 
             }}
             
-            img, figure {{ break-inside: avoid; }}
+            img, figure {{ break-inside: avoid; max-width: 100% !important; }}
         }}
     </style>
     """
@@ -51,12 +58,13 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         soup.head.append(BeautifulSoup(custom_styles, 'html.parser'))
 
     async with async_playwright() as p:
-        # Launch with no-sandbox flags for Cloud/Linux environments
         browser = await p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
         page = await browser.new_page()
+        
+        # wait_until="networkidle" is critical here so the Google Font has time to load
         await page.set_content(str(soup), wait_until="networkidle")
         
-        # JavaScript Scaling: Shrinks tables to fit A4 width (approx 720px with margins)
+        # JavaScript Scaling: Shrinks tables only if they still exceed the page width after wrapping
         await page.evaluate('''() => {
             const tables = document.querySelectorAll('table');
             const pageWidth = 720; 
@@ -66,7 +74,6 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
                     const scaleFactor = pageWidth / currentWidth;
                     table.style.transform = `scale(${scaleFactor})`;
                     table.style.transformOrigin = 'top left';
-                    // Prevent large empty vertical spaces after scaling
                     table.parentElement.style.height = (table.offsetHeight * scaleFactor) + "px";
                     table.parentElement.style.overflow = "hidden";
                 }
