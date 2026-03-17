@@ -3,11 +3,11 @@ import asyncio
 import sys
 import os
 import tempfile
+import subprocess
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
 # --- MANDATORY WINDOWS FIX ---
-# This prevents the NotImplementedError on Windows machines
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
 
@@ -18,15 +18,13 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
 
     notion_grey = "#91918e"
     
-    # CSS Customisation: 
-    # 1. Page breaks at horizontal rules
-    # 2. Notion-style typography
-    # 3. Table scaling preparation
+    # CSS Customisation for Notion Aesthetic
     custom_styles = f"""
     <style>
         @media print {{
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
             
+            /* Engineering Table Style: No wrapping, border sync */
             table {{ 
                 width: 100% !important; 
                 table-layout: auto !important; 
@@ -53,23 +51,24 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
         soup.head.append(BeautifulSoup(custom_styles, 'html.parser'))
 
     async with async_playwright() as p:
-        # Added --no-sandbox flags for Streamlit Cloud (Linux) compatibility
+        # Launch with no-sandbox flags for Cloud/Linux environments
         browser = await p.chromium.launch(args=["--no-sandbox", "--disable-setuid-sandbox"])
         page = await browser.new_page()
         await page.set_content(str(soup), wait_until="networkidle")
         
-        # JavaScript Injection: Scales tables down ONLY if they exceed the page width
+        # JavaScript Scaling: Shrinks tables to fit A4 width (approx 720px with margins)
         await page.evaluate('''() => {
             const tables = document.querySelectorAll('table');
-            const pageWidth = 720; // Standard A4 width in pixels at 96 DPI minus margins
+            const pageWidth = 720; 
             tables.forEach(table => {
                 const currentWidth = table.offsetWidth;
                 if (currentWidth > pageWidth) {
                     const scaleFactor = pageWidth / currentWidth;
                     table.style.transform = `scale(${scaleFactor})`;
                     table.style.transformOrigin = 'top left';
-                    // Adjust container height to prevent large gaps after scaled tables
+                    // Prevent large empty vertical spaces after scaling
                     table.parentElement.style.height = (table.offsetHeight * scaleFactor) + "px";
+                    table.parentElement.style.overflow = "hidden";
                 }
             });
         }''')
@@ -94,39 +93,49 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
 st.set_page_config(page_title="Notion Engineering PDF Tool", page_icon="📑")
 
 st.title("📑 Notion to Engineering PDF")
-st.info("Upload your Notion HTML export to generate a scaled, paginated PDF with custom headers.")
+st.info("Adaptive table scaling for University of Bath coursework.")
 
 with st.sidebar:
-    st.header("Report Details")
+    st.header("Report Configuration")
     header_input = st.text_input("Header Text", "EE22005: Engineering Practice and Design")
     footer_input = st.text_input("Footer Text", "")
     st.divider()
-    st.caption("This tool scales wide tables automatically to fit A4 width without wrapping text.")
+    st.caption("Tables are scaled proportionally to fit the page without text wrapping.")
 
-uploaded_file = st.file_uploader("Choose Notion HTML file", type=['html'])
+uploaded_file = st.file_uploader("Upload Notion HTML", type=['html'])
 
 if uploaded_file is not None:
     if st.button("Generate & Download PDF", type="primary"):
-        with st.spinner("Scaling tables and rendering PDF..."):
+        # --- CLOUD BROWSER INSTALLATION CHECK ---
+        if sys.platform != "win32":
+            with st.spinner("Ensuring browser dependencies are installed..."):
+                try:
+                    subprocess.run(["playwright", "install", "chromium"], check=True)
+                except Exception as e:
+                    st.error(f"Browser install failed: {e}")
+
+        with st.spinner("Rendering report..."):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_html:
                 tmp_html.write(uploaded_file.getvalue())
                 tmp_path = tmp_html.name
             
-            output_path = "formatted_report.pdf"
+            output_path = "notion_report_scaled.pdf"
             
             try:
                 asyncio.run(generate_pdf(tmp_path, output_path, header_input, footer_input))
                 
                 with open(output_path, "rb") as f:
-                    st.success("PDF Ready!")
+                    st.success("PDF Generation Complete!")
                     st.download_button(
-                        label="Click to Download",
+                        label="Download PDF",
                         data=f,
-                        file_name=f"{uploaded_file.name.replace('.html', '')}.pdf",
+                        file_name=f"{uploaded_file.name.replace('.html', '')}_scaled.pdf",
                         mime="application/pdf"
                     )
             except Exception as e:
-                st.error(f"An error occurred: {e}")
+                st.error(f"Processing Error: {e}")
             finally:
                 if os.path.exists(tmp_path):
                     os.remove(tmp_path)
+                if os.path.exists(output_path):
+                    os.remove(output_path)
