@@ -53,6 +53,7 @@ async def generate_pdf(
         @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
 
         @media print {{
+            @page {{ margin: 0 !important; }}
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
 
             /* ROOT CAUSE FIX:
