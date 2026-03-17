@@ -106,13 +106,19 @@ uploaded_file = st.file_uploader("Upload Notion HTML", type=['html'])
 
 if uploaded_file is not None:
     if st.button("Generate & Download PDF", type="primary"):
-        # --- CLOUD BROWSER INSTALLATION CHECK ---
+        # --- ROBUST CLOUD BROWSER INSTALLATION ---
         if sys.platform != "win32":
-            with st.spinner("Ensuring browser dependencies are installed..."):
+            with st.spinner("Provisioning browser engine (this may take a minute)..."):
                 try:
-                    subprocess.run(["playwright", "install", "chromium"], check=True)
+                    # Run playwright through the active Python executable
+                    subprocess.run(
+                        [sys.executable, "-m", "playwright", "install", "chromium"], 
+                        check=True
+                    )
+                except subprocess.CalledProcessError as e:
+                    st.error(f"Browser installation process failed with code {e.returncode}")
                 except Exception as e:
-                    st.error(f"Browser install failed: {e}")
+                    st.error(f"Unexpected error during browser setup: {e}")
 
         with st.spinner("Rendering report..."):
             with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_html:
