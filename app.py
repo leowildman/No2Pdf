@@ -112,6 +112,20 @@ async def generate_pdf(input_html_path, output_pdf_path, header_text, footer_tex
             });
         }''')
 
+        # Prevent tables that fit on a single page from splitting across pages.
+        # A4 at 96dpi = 1123px tall; minus 80px top + 80px bottom margins = 963px
+        # printable height. Only apply break-inside:avoid to tables smaller than
+        # this — taller tables must be allowed to paginate row by row.
+        await page.evaluate('''() => {
+            const MAX_H = 963;
+            document.querySelectorAll('table').forEach(table => {
+                if (table.getBoundingClientRect().height <= MAX_H) {
+                    table.style.breakInside = 'avoid';
+                    table.style.pageBreakInside = 'avoid';
+                }
+            });
+        }''')
+
         shared_style = f"font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 10px; color: {notion_grey};"
 
         await page.pdf(
