@@ -283,6 +283,19 @@ with st.sidebar:
     pdf_author_input  = st.text_input("PDF author (metadata)", "")
     filename_input    = st.text_input("Output filename", "", placeholder="Leave blank to use document name")
 
+with st.expander("📖 How to export from Notion", expanded=False):
+    st.markdown("**Step 1 — Open your Notion page**")
+    st.write("Navigate to the page you want to export in Notion.")
+    st.divider()
+    st.markdown("**Step 2 — Open the export menu**")
+    st.write("Click the **⋯** menu in the top-right corner of the page, then select **Export**.")
+    st.divider()
+    st.markdown("**Step 3 — Set export options**")
+    st.write("Set the export format to **HTML** and make sure **Include subpages** and **Create folders for subpages** are set as needed. Then click **Export**.")
+    st.divider()
+    st.markdown("**Step 4 — Upload the ZIP below**")
+    st.write("Notion will download a `.zip` file. Upload it directly below — no need to unzip it.")
+
 uploaded_file = st.file_uploader("Upload Notion HTML or ZIP", type=['html', 'zip'])
 
 if uploaded_file is not None:
