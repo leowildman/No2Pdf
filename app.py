@@ -6,7 +6,6 @@ import tempfile
 import subprocess
 import zipfile
 import shutil
-from datetime import date
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 
@@ -22,7 +21,6 @@ async def generate_pdf(
     margin_top, margin_bottom, margin_left, margin_right,
     body_font_size, table_font_size, line_height,
     pdf_title, pdf_author,
-    filename_override,
 ):
     with open(input_html_path, 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
@@ -37,10 +35,10 @@ async def generate_pdf(
 
     notion_grey = "#91918e"
 
-    # Only inject overrides if user moved sliders off 0 (0 = use Notion default)
-    body_font_css   = f"font-size: {body_font_size}pt !important;"   if body_font_size   > 0   else ""
-    table_font_css  = f"font-size: {table_font_size}pt !important;"  if table_font_size  > 0   else ""
-    line_height_css = f"line-height: {line_height} !important;"      if line_height      > 0.0 else ""
+    # Only inject typography overrides if user moved sliders off 0 (0 = Notion default)
+    body_font_css   = f"font-size: {body_font_size}pt !important;"  if body_font_size  > 0   else ""
+    table_font_css  = f"font-size: {table_font_size}pt !important;" if table_font_size  > 0   else ""
+    line_height_css = f"line-height: {line_height} !important;"     if line_height      > 0.0 else ""
 
     custom_styles = f"""
     <style>
@@ -156,12 +154,12 @@ async def generate_pdf(
             }});
         }}''')
 
-        # Build header/footer with left/centre/right slots
+        # Header/footer: three-column layout matching doc 6's 40px side padding
         shared_style = f"font-family: ui-sans-serif, -apple-system, sans-serif; font-size: 10px; color: {notion_grey};"
 
         def three_col(left, centre, right):
             return (
-                f'<div style="{shared_style} width:100%; padding:0 {margin_right}mm 0 {margin_left}mm; '
+                f'<div style="{shared_style} width:100%; padding:0 40px; '
                 f'display:flex; justify-content:space-between; align-items:center;">'
                 f'<span style="flex:1; text-align:left;">{left}</span>'
                 f'<span style="flex:1; text-align:center;">{centre}</span>'
@@ -265,11 +263,12 @@ with st.sidebar:
     st.markdown("**Margins (mm)**")
     col1, col2 = st.columns(2)
     with col1:
-        margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=20)
-        margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=15)
+        # Defaults match doc 6: 80px top/bottom, 40px left/right converted to mm
+        margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=21)
+        margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=11)
     with col2:
-        margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=20)
-        margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=15)
+        margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=21)
+        margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=11)
 
     st.divider()
     st.header("Typography")
@@ -334,7 +333,6 @@ if uploaded_file is not None:
                     line_height=line_height_input,
                     pdf_title=pdf_title_input,
                     pdf_author=pdf_author_input,
-                    filename_override=filename_input.strip(),
                 ))
 
                 with open(output_path, "rb") as f:
