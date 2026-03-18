@@ -1,0 +1,713 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>Project Week 3 - The Mouse Race</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+/* Override strong tags inside headings to maintain consistent weight */
+h1 strong,
+h2 strong,
+h3 strong {
+	font-weight: 600;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 10px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.collection-content td {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+	margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.callout img.notion-static-icon {
+	width: 1em;
+	height: 1em;
+}
+
+.callout p {
+	margin: 0;
+}
+
+.callout h1,
+.callout h2,
+.callout h3 {
+	margin: 0 0 0.6rem;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+blockquote.quote-large {
+	font-size: 1.25em;
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", "Noto Sans Arabic", "Noto Sans Hebrew", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.highlight-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.highlight-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.highlight-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.highlight-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.highlight-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.highlight-default_background {
+	color: rgba(44, 44, 43, 1);
+}
+.highlight-gray_background {
+	background: rgba(42, 28, 0, 0.07);
+}
+.highlight-brown_background {
+	background: rgba(139, 46, 0, 0.086);
+}
+.highlight-orange_background {
+	background: rgba(224, 101, 1, 0.129);
+}
+.highlight-yellow_background {
+	background: rgba(211, 168, 0, 0.137);
+}
+.highlight-teal_background {
+	background: rgba(0, 100, 45, 0.09);
+}
+.highlight-blue_background {
+	background: rgba(0, 124, 215, 0.094);
+}
+.highlight-purple_background {
+	background: rgba(102, 0, 178, 0.078);
+}
+.highlight-pink_background {
+	background: rgba(197, 0, 93, 0.086);
+}
+.highlight-red_background {
+	background: rgba(223, 22, 0, 0.094);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(125, 122, 117, 1);
+	fill: rgba(125, 122, 117, 1);
+}
+.block-color-brown {
+	color: rgba(159, 118, 90, 1);
+	fill: rgba(159, 118, 90, 1);
+}
+.block-color-orange {
+	color: rgba(210, 123, 45, 1);
+	fill: rgba(210, 123, 45, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 148, 52, 1);
+	fill: rgba(203, 148, 52, 1);
+}
+.block-color-teal {
+	color: rgba(80, 148, 110, 1);
+	fill: rgba(80, 148, 110, 1);
+}
+.block-color-blue {
+	color: rgba(56, 125, 201, 1);
+	fill: rgba(56, 125, 201, 1);
+}
+.block-color-purple {
+	color: rgba(154, 107, 180, 1);
+	fill: rgba(154, 107, 180, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(207, 81, 72, 1);
+	fill: rgba(207, 81, 72, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(240, 239, 237, 1);
+}
+.block-color-brown_background {
+	background: rgba(245, 237, 233, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 235, 222, 1);
+}
+.block-color-yellow_background {
+	background: rgba(249, 243, 220, 1);
+}
+.block-color-teal_background {
+	background: rgba(232, 241, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(229, 242, 252, 1);
+}
+.block-color-purple_background {
+	background: rgba(243, 235, 249, 1);
+}
+.block-color-pink_background {
+	background: rgba(250, 233, 241, 1);
+}
+.block-color-red_background {
+	background: rgba(252, 233, 231, 1);
+}
+.select-value-color-default { background-color: rgba(42, 28, 0, 0.07); }
+.select-value-color-gray { background-color: rgba(28, 19, 1, 0.11); }
+.select-value-color-brown { background-color: rgba(127, 51, 0, 0.156); }
+.select-value-color-orange { background-color: rgba(196, 88, 0, 0.203); }
+.select-value-color-yellow { background-color: rgba(209, 156, 0, 0.282); }
+.select-value-color-green { background-color: rgba(0, 96, 38, 0.156); }
+.select-value-color-blue { background-color: rgba(0, 118, 217, 0.203); }
+.select-value-color-purple { background-color: rgba(92, 0, 163, 0.141); }
+.select-value-color-pink { background-color: rgba(183, 0, 78, 0.152); }
+.select-value-color-red { background-color: rgba(206, 24, 0, 0.164); }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="3266d27c-fbfa-8022-913a-ebfdc36c1d19" class="page sans"><header><img class="page-cover-image" src="https://www.notion.so/images/page-cover/nasa_robert_stewart_spacewalk.jpg" style="object-position:center 40%"/><h1 class="page-title" dir="auto">Project Week 3 - The Mouse Race</h1><p class="page-description" dir="auto"></p></header><div class="page-body"><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-80ad-9d4e-d2621a5b6b98" class="">A report by Leo Wildman (ljrw20) - University of Bath</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-811d-a436-f6fd3db517c9" class="">EE22005: Engineering Practice and Design</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-813e-ae49-c8457aa5f279" class="">Word count: FILLIN</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81b1-9a5f-df71706c8039" class="">17 March 2026</p></div><div style="display:contents" dir="auto"><hr id="3266d27c-fbfa-8059-b304-e066a9b9e917"/></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-811f-851c-eb5e0ba41f48" class="">Executive Summary</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81ea-ad62-d334baffdffe" class="">See the instructions within the lab script for writing an Executive Summary</p></div><div style="display:contents" dir="auto"><hr id="3266d27c-fbfa-80c5-8c90-f28fa775e17b"/></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8107-80fd-e449cd52c700" class="">Table of Contents</h1></div><div style="display:contents" dir="ltr"><nav id="3266d27c-fbfa-805c-9175-eb66c86cffd6" class="block-color-gray table_of_contents"><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-80ad-9d4e-d2621a5b6b98">A report by Leo Wildman (ljrw20) - University of Bath</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-811f-851c-eb5e0ba41f48">Executive Summary</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8107-80fd-e449cd52c700">Table of Contents</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8155-8033-c77c7962b38d">List of Figures</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8183-83ee-f8a846e29b29">List of Tables</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8168-9943-ed3086b4221d">List of Acronyms</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8161-8017-eab3871e31eb">Introduction</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-81f0-974d-d09fc32134e8">Aims</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-810b-8e1a-c096576f193d">Scope</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8155-8167-c0ecb154d9d7">Team management</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-8161-b59b-e60fe81df720">Team leadership</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-810e-be5e-f6a25d7e54a7">Mouse Design</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-8153-8cef-c2802af930bf">Dynamic system capture and simulation using SIMULINK</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-813c-83d4-effa86bf15d6">Power electronics simulation and design evaluation</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-813b-94d0-e9e8cb04e203">Software design</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8186-b15e-fd1117e2f445">Testing &amp; Validation</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-81ba-9aa6-eab3fdf8798e">Design &amp; implementation of electronic circuit to vary motor speed</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-8113-ba1d-ecbc63ed9b6b">Test and validation of Code</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8155-9bb1-cc2ae117ead7">Final Product</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-81cc-ba53-e426f3089aa7">Investigation of complex problem with laboratory skills</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-815e-a1ae-cfb21511c222">Sustainability</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-81d9-a0fc-e1b07105095b">Sustainable Energy Management</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-81f8-af3d-df0138a0f830">Risk and change management</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-81e1-9975-ef9d7961007b">Risk mitigation</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-817a-bdaf-f455026a714d">Change management</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-81d1-a3b7-de9f9d169f1e">Conclusion</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-8128-baf7-d9520e33e08e">Table, Figures and Equations examples [Delete]</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-815e-a21a-fde497ad0824">References (including Quality Referencing)</a></div><div class="table_of_contents-item table_of_contents-indent-0"><a class="table_of_contents-link" href="#3266d27c-fbfa-81b5-8c61-ffbb95657888">Appendices</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-816d-b0af-ff356f0aae2f">Appendix A: Design and Development Matrix</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-813a-bd9a-ebc7f3dd71a4">Appendix B: Risk Assessment &amp; Mitigation</a></div><div class="table_of_contents-item table_of_contents-indent-2"><a class="table_of_contents-link" href="#3266d27c-fbfa-8027-ae89-c449b66a9a0a">Likelihood Key</a></div><div class="table_of_contents-item table_of_contents-indent-2"><a class="table_of_contents-link" href="#3266d27c-fbfa-804b-98f0-f325201f8813">Severity Key</a></div><div class="table_of_contents-item table_of_contents-indent-2"><a class="table_of_contents-link" href="#3266d27c-fbfa-807a-b789-fa20e4f58924">Risk Acceptance Matrix</a></div><div class="table_of_contents-item table_of_contents-indent-1"><a class="table_of_contents-link" href="#3266d27c-fbfa-80ee-9c60-e065d920fb1d">Acceptance Levels</a></div><div class="table_of_contents-item table_of_contents-indent-2"><a class="table_of_contents-link" href="#3266d27c-fbfa-8030-8451-f441d5739aef">Risk Assessment</a></div></nav></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8155-8033-c77c7962b38d" class="">List of Figures</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81fa-b220-d54f97e243f5" class="">[Right click on list of figures and ‘Update Field’. Delete page if there are no figures.]</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8157-810e-fc5faf6bc326" class=""><a href="about:blank#_Toc192060950">Figure 1: Possible image of the racetrack 1</a></p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81cd-b327-e8a5b3671e9b" class=""><a href="about:blank#_Ref162453481">Figure 2: Sample Figure Caption 5</a></p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8183-83ee-f8a846e29b29" class="">List of Tables</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8182-82ca-d2e77d733d4e" class="">[Right click on list of tables and ‘Update Field’. Delete page if there are no tables.]</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8130-968c-ceb7a1035ed2" class=""><a href="about:blank#_Ref162453489">Table 2 Sample Table Caption 3</a></p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81cd-b6bc-d6d3e6c9d3b7" class=""><a href="about:blank#_Ref162510608">Table 2 This is caption 3</a></p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8168-9943-ed3086b4221d" class="">List of Acronyms</h1></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8153-9a71-eb0662db75e8" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81b7-b908-c1f5923cf402"><th id="aAGh" class="simple-table-header-color simple-table-header">UoB</th><th id="YZDR" class="simple-table-header-color simple-table-header">University of Bath</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-818a-ae7d-ddf2a8185d22"><th id="aAGh" class="simple-table-header-color simple-table-header"></th><td id="YZDR" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-810b-bdcf-e492a7d42882"><th id="aAGh" class="simple-table-header-color simple-table-header"></th><td id="YZDR" class=""></td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8161-8017-eab3871e31eb" class="">Introduction</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81c3-b152-f4baa9e55594" class="">Replace all sections in square brackets and remove any sections not required or highlighted text.</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-81f0-974d-d09fc32134e8" class="">Aims</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81c5-bab0-ff3d08de89a7" class="">[Add your aims here]</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-810b-8e1a-c096576f193d" class="">Scope</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-816b-8fa8-d227eec10cda" class="">[Add your scope here]</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-819d-acd4-e2cc965fc180" class="">Figure 1: Possible image of the racetrack</p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8155-8167-c0ecb154d9d7" class="">Team management</h1></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-8161-b59b-e60fe81df720" class="">Team leadership</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8129-b7a1-ce64e5a85cb7" class="">The lab script describes what you should do to claim this skill at the Application level.</p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-810e-be5e-f6a25d7e54a7" class="">Mouse Design</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81d9-99d6-c0b8333ded5d" class="">Add info on Design &amp; development here.</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-8153-8cef-c2802af930bf" class="">Dynamic system capture and simulation using SIMULINK</h2></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-813c-83d4-effa86bf15d6" class="">Power electronics simulation and design evaluation</h2></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-813b-94d0-e9e8cb04e203" class="">Software design</h2></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8186-b15e-fd1117e2f445" class="">Testing &amp; Validation</h1></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-81ba-9aa6-eab3fdf8798e" class="">Design &amp; implementation of electronic circuit to vary motor speed</h2></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-8113-ba1d-ecbc63ed9b6b" class="">Test and validation of Code</h2></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8155-9bb1-cc2ae117ead7" class="">Final Product</h1></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-8191-9f2f-f0f9470a25ec" class="bulleted-list"><li style="list-style-type:disc">Showcase the completed Mouse, highlighting its features and functionalities.</li></ul></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-8128-886c-c09c28683635" class="bulleted-list"><li style="list-style-type:disc">Include images or diagrams to visually support the description.</li></ul></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-81cc-ba53-e426f3089aa7" class="">Investigation of complex problem with laboratory skills</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8136-97bd-e5a4cb30f0c4" class="">The lab script describes what you should do to claim this skill at the Application level.</p></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-81aa-a7b7-f4cea97d2bb1" class="bulleted-list"><li style="list-style-type:disc"></li></ul></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-815e-a1ae-cfb21511c222" class="">Sustainability</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-812a-aba3-eae72c8490e0" class="">Use this section to include any sustainability considerations.</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-81d9-a0fc-e1b07105095b" class="">Sustainable Energy Management</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81c7-9f4d-e21cc80a646d" class="">The lab script describes what you should do to claim this skill at the Application level.</p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-81f8-af3d-df0138a0f830" class="">Risk and change management</h1></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-81e1-9975-ef9d7961007b" class="">Risk mitigation</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-816d-a1c9-d70d0cb2cd06" class="">The lab script describes what you should do to claim this skill at the Application level.</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-817a-bdaf-f455026a714d" class="">Change management</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-818a-93cb-c07f81e408f2" class="">The lab script describes what you should do to claim this skill at the Application level.</p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-81d1-a3b7-de9f9d169f1e" class="">Conclusion</h1></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-8152-8168-c70881944bb3" class="bulleted-list"><li style="list-style-type:disc">Summarize the achievements of the project.</li></ul></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-81bc-8295-fdddb5d9823a" class="bulleted-list"><li style="list-style-type:disc">Reflect on the skills and knowledge gained.</li></ul></div><div style="display:contents" dir="auto"><ul id="3266d27c-fbfa-810a-9540-c4c61386db61" class="bulleted-list"><li style="list-style-type:disc">Conclude with remarks on the project’s contribution to personal and educational growth.</li></ul></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-8128-baf7-d9520e33e08e" class="">Table, Figures and Equations examples [Delete]</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8120-9da4-efe970cc4849" class="">You can use cross-referencing like this to refer to a Figure 1or Table 2.</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81d9-830b-d5e4163d479c" class="">Table 2 [1]</p></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8187-bce3-d47b6477da63" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81c6-8ae3-ce57aaa72292"><th id="wi:O" class="simple-table-header-color simple-table-header">Sample table</th><th id="G]Tm" class="simple-table-header-color simple-table-header"></th><th id="B=OC" class="simple-table-header-color simple-table-header"></th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8158-9119-ee60b3bfc19d"><th id="wi:O" class="simple-table-header-color simple-table-header"></th><td id="G]Tm" class=""></td><td id="B=OC" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81db-aefb-f40822043c17"><th id="wi:O" class="simple-table-header-color simple-table-header"></th><td id="G]Tm" class=""></td><td id="B=OC" class=""></td></tr></div></tbody></table></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-81bc-86d9-d1283e23be6b" class="simple-table"><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81f9-8c33-c5d544df17c5"><th id="`:TN" class="simple-table-header-color simple-table-header"></th><td id="Nm:W" class=""></td><td id="IC_f" class=""></td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81e5-8d27-ce936a7f0730" class="">Figure 2: Sample Figure Caption</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8196-adbf-db6bc8def3e2" class="">Below is an example of a numbered equation (note that it is in a table)</p></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-811f-816e-e4e286579061" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8101-993f-f3e0998bc8c5"><th id="ueNe" class="simple-table-header-color simple-table-header"></th><th id="|?o[" class="simple-table-header-color simple-table-header"><em>y</em> = <em>mc</em>2</th><th id="qX&gt;K" class="simple-table-header-color simple-table-header"></th></tr></div></thead><tbody></tbody></table></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-81c1-b1c6-e9445866b561" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81d4-bf97-d5ca42983f5e"><th id="Ryd~" class="simple-table-header-color simple-table-header"></th><th id="_VOh" class="simple-table-header-color simple-table-header"><em>y</em> = <em>mc</em>2</th><th id="HXsY" class="simple-table-header-color simple-table-header">( 2 )</th></tr></div></thead><tbody></tbody></table></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-815e-a21a-fde497ad0824" class="">References (including Quality Referencing)</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8139-aa8e-c3d23449c707" class="">[Add references here using reference manager]</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81a3-98d0-d498b75bc290" class="">See the instructions in the lab script for how to satisfy the Efficient referencing skill.</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-817f-941d-d32ace879a63" class="">[1] J. Doe, &quot;Title of the Paper,&quot; *Journal Name*, vol. 10, no. 2, pp. 123-130, Mar. 2025. <a href="http://hyperlink.to.website.url.or.doi.etc/">http://hyperlink.to.website.URL.or.DOI.etc</a></p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8149-b27a-fdbc72720e9d" class=""><strong>Strong/weak</strong> (delete as appropriate) <strong>reference:</strong> [comment on the relevance, quality and timeliness of the source in 20-50 words]</p></div><div style="display:contents" dir="auto"><h1 id="3266d27c-fbfa-81b5-8c61-ffbb95657888" class="">Appendices</h1></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-81fe-9abd-e73a4aad0f64" class="">[A section break has been added before the Appendices to allow the page to be in landscape format for the appendices only]</p></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-816d-b0af-ff356f0aae2f" class="">Appendix A: Design and Development Matrix</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-8127-98da-fb910d85a971" class="">See the instructions in the lab script for writing the risk mitigation section.</p></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8171-88f2-d8074b05c47a" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81bd-9051-c73646874e7c"><th id="gxV[" class="simple-table-header-color simple-table-header">Needs analysis</th><th id="Gt}^" class="simple-table-header-color simple-table-header"></th><th id=";&gt;d;" class="simple-table-header-color simple-table-header">Target specifications</th><th id="T^CQ" class="simple-table-header-color simple-table-header"></th><th id="[c\n" class="simple-table-header-color simple-table-header"></th><th id="hWyI" class="simple-table-header-color simple-table-header">Technical solution</th><th id="RRPY" class="simple-table-header-color simple-table-header"></th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-810f-bcc0-c37debeee9a2"><th id="gxV[" class="simple-table-header-color simple-table-header">Ref Need</th><td id="Gt}^" class="">Description</td><td id=";&gt;d;" class="">Ref Spec</td><td id="T^CQ" class="">Description</td><td id="[c\n" class="">Objectives measurable + tolerance</td><td id="hWyI" class="">Possible solutions</td><td id="RRPY" class="">The chosen one</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81ad-a663-e681bef1b021"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8157-ad5d-c64fd2b82085"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81f9-a436-cfc0d241fbff"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-81af-93c1-fd924b6fbf6e"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-813c-92b3-fce826003323"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8130-89e2-f1dae396ee80"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8167-af38-f8dde991f6e4"><th id="gxV[" class="simple-table-header-color simple-table-header"></th><td id="Gt}^" class=""></td><td id=";&gt;d;" class=""></td><td id="T^CQ" class=""></td><td id="[c\n" class=""></td><td id="hWyI" class=""></td><td id="RRPY" class=""></td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-813a-bd9a-ebc7f3dd71a4" class="">Appendix B: Risk Assessment &amp; Mitigation</h2></div><div style="display:contents" dir="auto"><h3 id="3266d27c-fbfa-8027-ae89-c449b66a9a0a" class="">Likelihood Key</h3></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8086-af0f-dff0f2d3bf15" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8014-ae0b-ce0edc156512"><th id="ZK;J" class="simple-table-header-color simple-table-header" style="width:209.5px">Level</th><th id="npf`" class="simple-table-header-color simple-table-header">Descriptor</th><th id="B&lt;kE" class="simple-table-header-color simple-table-header">Probability</th><th id="EMSe" class="simple-table-header-color simple-table-header">Expected Frequency</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80cf-8cd8-fe9122f4faff"><th id="ZK;J" class="block-color-red_background simple-table-header" style="width:209.5px">5</th><td id="npf`" class="block-color-red_background">Almost Certain</td><td id="B&lt;kE" class="block-color-red_background">&gt;90% Chance</td><td id="EMSe" class="block-color-red_background">Once every Lab Session/Test</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80d0-ab35-c914f3689a0f"><th id="ZK;J" class="block-color-orange_background simple-table-header" style="width:209.5px">4</th><td id="npf`" class="block-color-orange_background">Likely</td><td id="B&lt;kE" class="block-color-orange_background">60-90% Chance</td><td id="EMSe" class="block-color-orange_background">Once every few lab sessions/Tests.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8021-b1a5-d12bf4ad7911"><th id="ZK;J" class="block-color-yellow_background simple-table-header" style="width:209.5px">3</th><td id="npf`" class="block-color-yellow_background">Possible</td><td id="B&lt;kE" class="block-color-yellow_background">30-60% Chance</td><td id="EMSe" class="block-color-yellow_background">Once over the entire week.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-809b-9ed4-fa6af646e7ce"><th id="ZK;J" class="block-color-blue_background simple-table-header" style="width:209.5px">2</th><td id="npf`" class="block-color-blue_background">Unlikely</td><td id="B&lt;kE" class="block-color-blue_background">10-30% Chance</td><td id="EMSe" class="block-color-blue_background">Under specific stress conditions.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8084-8361-fb6424317725"><th id="ZK;J" class="block-color-teal_background simple-table-header" style="width:209.5px">1</th><td id="npf`" class="block-color-teal_background">Rare</td><td id="B&lt;kE" class="block-color-teal_background">&lt;10% Chance</td><td id="EMSe" class="block-color-teal_background">Exceptional Circumstances</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="3266d27c-fbfa-804b-98f0-f325201f8813" class="">Severity Key</h3></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8034-abf7-ef7d6632ee61" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8065-b97d-d38708379599"><th id="D~YU" class="simple-table-header-color simple-table-header" style="width:204.66250610351562px">Level</th><th id="PGmR" class="simple-table-header-color simple-table-header" style="width:239.66666666666666px">Descriptor</th><th id="Uvuu" class="simple-table-header-color simple-table-header" style="width:239.66666666666666px">Impact Criteria</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8010-b0ce-d094d59b513a"><th id="D~YU" class="block-color-red_background simple-table-header" style="width:204.66250610351562px">5</th><td id="PGmR" class="block-color-red_background" style="width:239.66666666666666px">Catastrophic</td><td id="Uvuu" class="block-color-red_background" style="width:239.66666666666666px">Permanent Damage to board; Total Project Failure; Danger to Project Safety.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8057-9d97-c3d6d0d247a7"><th id="D~YU" class="block-color-orange_background simple-table-header" style="width:204.66250610351562px">4</th><td id="PGmR" class="block-color-orange_background" style="width:239.66666666666666px">Major</td><td id="Uvuu" class="block-color-orange_background" style="width:239.66666666666666px">Significant Component Failure, requiring a rebuild or loss of &gt; 2 days of work; Threat to project outcomes.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80fa-9db9-f4e00a8634f6"><th id="D~YU" class="block-color-yellow_background simple-table-header" style="width:204.66250610351562px">3</th><td id="PGmR" class="block-color-yellow_background" style="width:239.66666666666666px">Moderate</td><td id="Uvuu" class="block-color-yellow_background" style="width:239.66666666666666px">Partial System Failure, Requires significant troubleshooting &gt;3hrs.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-805e-aa36-fc0ce457118f"><th id="D~YU" class="block-color-blue_background simple-table-header" style="width:204.66250610351562px">2</th><td id="PGmR" class="block-color-blue_background" style="width:239.66666666666666px">Minor</td><td id="Uvuu" class="block-color-blue_background" style="width:239.66666666666666px">Minor delay in testing or software bug; easily rectified issue.</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80f4-bb46-ecd352da7aa0"><th id="D~YU" class="block-color-teal_background simple-table-header" style="width:204.66250610351562px">1</th><td id="PGmR" class="block-color-teal_background" style="width:239.66666666666666px">Negligible</td><td id="Uvuu" class="block-color-teal_background" style="width:239.66666666666666px">Very low impact; e.g. loose wire, missing semi-colon.</td></tr></div></tbody></table></div><div style="display:contents" dir="auto"><h3 id="3266d27c-fbfa-807a-b789-fa20e4f58924" class="">Risk Acceptance Matrix</h3></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-8072-971f-c7117c798230" class="simple-table"><thead class="simple-table-header"><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80ce-9d9a-d4b3eeb1ece9"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">Severity \ Likelihood</th><th id="]t@{" class="simple-table-header-color simple-table-header">1 (Rare)</th><th id="pQql" class="simple-table-header-color simple-table-header">2 (Unlikely)</th><th id="Lk;r" class="simple-table-header-color simple-table-header">3 (Possible)</th><th id="ocRE" class="simple-table-header-color simple-table-header">4 (Likely)</th><th id="zpGj" class="simple-table-header-color simple-table-header">5 (Certain)</th></tr></div></thead><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8079-8623-d940c2cfd1b8"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">1 (Negligible)</th><td id="]t@{" class="">1</td><td id="pQql" class="">2</td><td id="Lk;r" class="">3</td><td id="ocRE" class="">4</td><td id="zpGj" class="">5</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80c5-8015-d247f51cebb8"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">2 (Minor)</th><td id="]t@{" class="">2</td><td id="pQql" class="">4</td><td id="Lk;r" class="">6</td><td id="ocRE" class="">8</td><td id="zpGj" class="">10</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80bf-910c-f96ce091858e"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">3 (Moderate)</th><td id="]t@{" class="">3</td><td id="pQql" class="">6</td><td id="Lk;r" class="">9</td><td id="ocRE" class="">12</td><td id="zpGj" class="">15</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8014-97b7-d3bffc4fc948"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">4 (Major)</th><td id="]t@{" class="">4</td><td id="pQql" class="">8</td><td id="Lk;r" class="">12</td><td id="ocRE" class="">16</td><td id="zpGj" class="">20</td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8066-b831-fb559176b08b"><th id="g|Eh" class="simple-table-header-color simple-table-header" style="width:131px">5 (Catastrophic)</th><td id="]t@{" class="">5</td><td id="pQql" class="">10</td><td id="Lk;r" class="">15</td><td id="ocRE" class="">20</td><td id="zpGj" class="">25</td></tr></div></tbody></table></div><div style="display:contents" dir="ltr"><figure class="block-color-brown_background callout" style="white-space:pre-wrap;display:flex" id="3266d27c-fbfa-80c7-bcfd-d1dccf21fa70"><div style="font-size:1.5em"><span class="icon">🚀</span></div><div style="width:100%"><div style="display:contents" dir="auto"><h2 id="3266d27c-fbfa-80ee-9c60-e065d920fb1d" class="">Acceptance Levels</h2></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-802d-a592-cb073d39e2ac" class="">The acceptance levels are determined by a safety-first priority. Any risk categorized as &#x27;Catastrophic&#x27; severity is automatically moved to the &#x27;Mitigation Required&#x27; or &#x27;Avoid&#x27; zone regardless of likelihood, as the impact would result in total project failure or a safety hazard. Conversely, high-likelihood &#x27;Minor&#x27; risks are considered acceptable if they can be rectified quickly without impacting the project timeline. Risk “Scores” are used as an indicator and <strong>not</strong> as a classifier.</p></div><div style="display:contents" dir="auto"><hr id="3266d27c-fbfa-8090-9eea-d72b851b4b67"/></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-80c6-af3c-d04e44d1bd44" class="block-color-teal">Green: Acceptable risk. No mitigation required as expected in project.</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-80e2-aeaa-c7d9bc748194" class="block-color-orange">Orange: Mitigation Required. Implement reasonable controls and monitor regularly.</p></div><div style="display:contents" dir="auto"><p id="3266d27c-fbfa-80e2-bb7f-ee05d53ece65" class="block-color-red">Red: Unacceptable risk. Pre-planning required to reclassify risk, but not possible to continue while this risk is present.</p></div></div></figure></div><div style="display:contents" dir="auto"><h3 id="3266d27c-fbfa-8030-8451-f441d5739aef" class="">Risk Assessment</h3></div><div style="display:contents" dir="ltr"><table id="3266d27c-fbfa-805b-bf5b-e8f651d3010f" class="simple-table"><tbody><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80e9-9d30-fc46b34ab0b4"><td id="bdTE" class="" style="width:35px"><strong>#</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Hazard(s) Identified</strong></td><td id="KdA^" class="" style="width:103.70000457763672px"><strong>Existing Controls &amp; Measures</strong></td><td id="Txpp" class="" style="width:48.70000457763672px"><strong>S (a)</strong></td><td id="xofg" class="" style="width:50.70000457763672px"><strong>L (b)</strong></td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>Rating (axb)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px"><strong>Additional Control/Action Required</strong></td><td id="y`hH" class="" style="width:48.70000457763672px"><strong>S (a)</strong></td><td id="`Kok" class="" style="width:47.70000457763672px"><strong>L (b)</strong></td><td id="r?IZ" class="" style="width:70.7px"><strong>Rating (axb)</strong></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80a3-9abb-e42a84e50661"><td id="bdTE" class="" style="width:35px"><strong>1</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Insufficient testing time</strong> for the final racetrack.</td><td id="KdA^" class="" style="width:103.70000457763672px">Scheduled lab attendance.</td><td id="Txpp" class="" style="width:48.70000457763672px">4</td><td id="xofg" class="" style="width:50.70000457763672px">3</td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>12 (High)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px">Prioritize sensor circuit and motor driver milestones; test on mid-sized tracks progressively.</td><td id="y`hH" class="" style="width:48.70000457763672px">3</td><td id="`Kok" class="" style="width:47.70000457763672px">2</td><td id="r?IZ" class="" style="width:70.7px"><strong>6 (Low)</strong></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-800d-9462-d6ae2ac074b4"><td id="bdTE" class="" style="width:35px"><strong>2</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Insufficient motor torque</strong> to climb the ramp.</td><td id="KdA^" class="" style="width:103.70000457763672px">Preliminary motor driver circuit design.</td><td id="Txpp" class="" style="width:48.70000457763672px">5</td><td id="xofg" class="" style="width:50.70000457763672px">4</td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>20 (High)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px">Test torque early with 10% battery load tolerances; experimentally optimize PID values for inclines.</td><td id="y`hH" class="" style="width:48.70000457763672px">4</td><td id="`Kok" class="" style="width:47.70000457763672px">2</td><td id="r?IZ" class="" style="width:70.7px"><strong>8 (Med)</strong></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-8083-8524-fa936a4a7e14"><td id="bdTE" class="" style="width:35px"><strong>3</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Sensor coil failure</strong> or signal loss.</td><td id="KdA^" class="" style="width:103.70000457763672px">Basic placement of pickup coils.</td><td id="Txpp" class="" style="width:48.70000457763672px">4</td><td id="xofg" class="" style="width:50.70000457763672px">3</td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>12 (High)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px">Iteratively calibrate inductor orientation; mount coils physically close to the signal source.</td><td id="y`hH" class="" style="width:48.70000457763672px">3</td><td id="`Kok" class="" style="width:47.70000457763672px">2</td><td id="r?IZ" class="" style="width:70.7px"><strong>6 (Low)</strong></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80f8-88ab-f575375f93a2"><td id="bdTE" class="" style="width:35px"><strong>4</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Wiring errors</strong> causing circuit malfunction.</td><td id="KdA^" class="" style="width:103.70000457763672px">Simulation and schematic verification.</td><td id="Txpp" class="" style="width:48.70000457763672px">3</td><td id="xofg" class="" style="width:50.70000457763672px">2</td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>6 (Low)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px">Use a logical assembly chronology; verify each module with lab equipment before integration.</td><td id="y`hH" class="" style="width:48.70000457763672px">2</td><td id="`Kok" class="" style="width:47.70000457763672px">1</td><td id="r?IZ" class="" style="width:70.7px"><strong>2 (Low)</strong></td></tr></div><div style="display:contents" dir="ltr"><tr id="3266d27c-fbfa-80a5-aa53-dc3e70f3dd60"><td id="bdTE" class="" style="width:35px"><strong>5</strong></td><td id="ETRG" class="" style="width:105.70000457763672px"><strong>Mechanical instability</strong> (tipping/leaving track).</td><td id="KdA^" class="" style="width:103.70000457763672px">Basic chassis alignment.</td><td id="Txpp" class="" style="width:48.70000457763672px">3</td><td id="xofg" class="" style="width:50.70000457763672px">3</td><td id="eWlX" class="" style="width:81.70000457763672px"><strong>9 (Med)</strong></td><td id="_Dof" class="" style="width:108.70000457763672px">Uniformly distribute component weight; perform &quot;push tests&quot; on the front ball-and-socket joint.</td><td id="y`hH" class="" style="width:48.70000457763672px">2</td><td id="`Kok" class="" style="width:47.70000457763672px">2</td><td id="r?IZ" class="" style="width:70.7px"><strong>4 (Low)</strong></td></tr></div></tbody></table></div></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
