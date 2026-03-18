@@ -1,4 +1,6 @@
 fonts-noto-color-emoji
+fonts-liberation
+fonts-dejavu-core
 libglib2.0-0t64
 libnss3
 libatk1.0-0t64

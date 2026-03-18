@@ -50,7 +50,7 @@ async def generate_pdf(
     <style>
         /* Noto Color Emoji is loaded as a web font so emoji render correctly
            on Linux servers where the system emoji font is not installed */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Color+Emoji&display=swap');
 
         @media print {{
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
@@ -93,7 +93,9 @@ async def generate_pdf(
             body {{ 
                 /* Notion's actual font stack — system fonts render reliably
                    in Playwright without needing a network font load */
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
+                /* Inter loads from Google Fonts; Liberation/DejaVu are the Linux
+                   system font fallbacks installed via packages.txt */
+                font-family: 'Inter', 'Liberation Sans', 'DejaVu Sans', Arial, sans-serif !important;
                 color: rgb(55, 53, 47);
                 {body_font_css}
                 {line_height_css}
