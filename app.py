@@ -22,6 +22,12 @@ async def generate_pdf(
     body_font_size, table_font_size, line_height,
     pdf_title, pdf_author,
 ):
+    # Safety clamp — prevents bad margin values from causing layout clipping
+    margin_top    = max(5, int(margin_top))
+    margin_bottom = max(5, int(margin_bottom))
+    margin_left   = max(5, int(margin_left))
+    margin_right  = max(5, int(margin_right))
+
     with open(input_html_path, 'r', encoding='utf-8') as f:
         soup = BeautifulSoup(f, 'html.parser')
 
@@ -93,6 +99,16 @@ async def generate_pdf(
                 {line_height_css}
             }}
             img, figure {{ break-inside: avoid; max-width: 100% !important; }}
+            /* Notion's cover image uses max-height:30vh which behaves differently
+               in Playwright's print context vs screen, clipping the top of the image.
+               Fix it to a sensible fixed height so it renders fully. */
+            .page-cover-image {{
+                max-height: 250px !important;
+                width: 100% !important;
+                object-fit: cover !important;
+                object-position: center !important;
+                display: block !important;
+            }}
         }}
     </style>
     """
@@ -240,48 +256,88 @@ def extract_zip(zip_bytes, extract_dir):
 
 
 # --- Streamlit WebUI ---
-st.set_page_config(page_title="Notion Engineering PDF Tool", page_icon="📑")
+st.set_page_config(page_title="Notion to PDF", page_icon="📑")
 
-st.title("📑 Notion to Engineering PDF")
+st.title("📑 Notion to PDF")
+st.caption("Convert any Notion HTML export to a clean, print-ready PDF.")
+
+MARGIN_PRESETS = {
+    "Normal": (21, 21, 11, 11),
+    "Narrow": (13, 13, 13, 13),
+    "Wide":   (25, 25, 25, 25),
+}
+
+# Initialise session state defaults on first run
+_defaults = dict(
+    hl='', hc='', hr='',
+    fl='', fr='',
+    suppress_p1=False,
+    page_size_sel='A4',
+    landscape=False,
+    margin_top=25, margin_bottom=25,
+    margin_left=11, margin_right=11,
+    body_font=0, table_font=0, line_height=0.0,
+    pdf_title='', pdf_author='', filename='',
+)
+for _k, _v in _defaults.items():
+    if _k not in st.session_state:
+        st.session_state[_k] = _v
 
 with st.sidebar:
     st.header("Header")
-    header_left_input   = st.text_input("Left",   "",                                         key="hl")
-    header_centre_input = st.text_input("Centre", "EE22005: Engineering Practice and Design", key="hc")
-    header_right_input  = st.text_input("Right",  "",                                         key="hr")
+    header_left_input   = st.text_input("Left",   key="hl")
+    header_centre_input = st.text_input("Centre", key="hc")
+    header_right_input  = st.text_input("Right",  key="hr")
 
     st.header("Footer")
-    footer_left_input  = st.text_input("Left",                              "Username - University of Bath", key="fl")
-    footer_right_input = st.text_input("Right (page number auto-appended)", "",                              key="fr")
-    suppress_hf_p1     = st.toggle("Suppress on page 1", value=False,
+    footer_left_input  = st.text_input("Left",                              key="fl")
+    footer_right_input = st.text_input("Right (page number auto-appended)", key="fr")
+    suppress_hf_p1     = st.toggle("Suppress on page 1", key="suppress_p1",
                                     help="Hides header & footer on the cover page.")
 
     st.divider()
-    st.header("Layout")
-    page_size_input = st.selectbox("Page size", ["A4", "Letter", "A3"], index=0)
-    landscape_input = st.toggle("Landscape", value=False)
-    st.markdown("**Margins (mm)**")
-    col1, col2 = st.columns(2)
-    with col1:
-        # Defaults match doc 6: 80px top/bottom, 40px left/right converted to mm
-        margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, value=21)
-        margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, value=11)
-    with col2:
-        margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, value=21)
-        margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, value=11)
+    with st.expander("📐 Layout", expanded=False):
+        page_size_input = st.selectbox("Page size", ["A4", "Letter", "A3"],
+                                        index=["A4", "Letter", "A3"].index(st.session_state.get('page_size_sel', 'A4')),
+                                        key="page_size_sel")
+        landscape_input = st.toggle("Landscape", key="landscape")
+
+        st.markdown("**Margin preset**")
+        _pc = st.columns(3)
+        for _i, (_name, _vals) in enumerate(MARGIN_PRESETS.items()):
+            with _pc[_i]:
+                if st.button(_name, use_container_width=True):
+                    st.session_state.margin_top    = _vals[0]
+                    st.session_state.margin_bottom = _vals[1]
+                    st.session_state.margin_left   = _vals[2]
+                    st.session_state.margin_right  = _vals[3]
+                    st.rerun()
+
+        st.markdown("**Margins (mm)**")
+        _c1, _c2 = st.columns(2)
+        with _c1:
+            margin_top_input    = st.number_input("Top",    min_value=5, max_value=60, key="margin_top")
+            margin_left_input   = st.number_input("Left",   min_value=5, max_value=60, key="margin_left")
+        with _c2:
+            margin_bottom_input = st.number_input("Bottom", min_value=5, max_value=60, key="margin_bottom")
+            margin_right_input  = st.number_input("Right",  min_value=5, max_value=60, key="margin_right")
+
+    with st.expander("🔤 Typography", expanded=False):
+        st.caption("Leave at 0 to use Notion's defaults.")
+        body_font_input   = st.slider("Body font size (pt)",  0, 14, key="body_font")
+        table_font_input  = st.slider("Table font size (pt)", 0, 14, key="table_font")
+        line_height_input = st.slider("Line height", 0.0, 2.0, step=0.1, format="%.1f", key="line_height")
+
+    with st.expander("📁 Output", expanded=False):
+        pdf_title_input  = st.text_input("PDF title (metadata)",  key="pdf_title")
+        pdf_author_input = st.text_input("PDF author (metadata)", key="pdf_author")
+        filename_input   = st.text_input("Output filename", key="filename", placeholder="Leave blank to use document name")
 
     st.divider()
-    st.header("Typography")
-    st.caption("Leave at 0 to use Notion's defaults.")
-    body_font_input   = st.slider("Body font size (pt)",  0, 14, 0)
-    table_font_input  = st.slider("Table font size (pt)", 0, 14, 0)
-    line_height_input = st.slider("Line height", 0.0, 2.0, 0.0, step=0.1, format="%.1f")
-
-    st.divider()
-    st.header("Output")
-    pdf_title_input   = st.text_input("PDF title (metadata)",  "")
-    pdf_author_input  = st.text_input("PDF author (metadata)", "")
-    filename_input    = st.text_input("Output filename", "", placeholder="Leave blank to use document name")
+    if st.button("↺ Reset to defaults", use_container_width=True):
+        for _k, _v in _defaults.items():
+            st.session_state[_k] = _v
+        st.rerun()
 
 with st.expander("📖 How to export from Notion", expanded=False):
     st.markdown("**Step 1 — Open your Notion page**")
@@ -291,7 +347,8 @@ with st.expander("📖 How to export from Notion", expanded=False):
     st.write("Click the **⋯** menu in the top-right corner of the page, then select **Export**.")
     st.divider()
     st.markdown("**Step 3 — Set export options**")
-    st.write("Set the export format to **HTML** and make sure **Include subpages** and **Create folders for subpages** are set as needed. Then click **Export**.")
+    st.write("Set the export format to **HTML** and make sure **Include subpages** and "
+             "**Create folders for subpages** are set as needed. Then click **Export**.")
     st.divider()
     st.markdown("**Step 4 — Upload the ZIP below**")
     st.write("Notion will download a `.zip` file. Upload it directly below — no need to unzip it.")
@@ -299,20 +356,22 @@ with st.expander("📖 How to export from Notion", expanded=False):
 uploaded_file = st.file_uploader("Upload Notion HTML or ZIP", type=['html', 'zip'])
 
 if uploaded_file is not None:
-    if st.button("Generate & Download PDF", type="primary"):
-        if sys.platform != "win32":
-            with st.spinner("Provisioning browser engine..."):
-                try:
-                    subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"], check=True)
-                except Exception as e:
-                    st.error(f"Browser installation failed: {e}")
+    if st.button("Generate PDF", type="primary", use_container_width=True):
+        tmp_dir     = tempfile.mkdtemp()
+        output_path = os.path.join(tmp_dir, "notion_report.pdf")
+        pdf_bytes   = None
+        output_name = "output.pdf"
 
-        with st.spinner("Rendering report..."):
-            # Use a persistent temp dir so images stay accessible during render
-            tmp_dir = tempfile.mkdtemp()
-            output_path = os.path.join(tmp_dir, "notion_report.pdf")
-
+        with st.status("Generating PDF…", expanded=True) as status:
             try:
+                st.write("🔧 Preparing browser engine…")
+                if sys.platform != "win32":
+                    subprocess.run(
+                        [sys.executable, "-m", "playwright", "install", "chromium"],
+                        check=True, capture_output=True,
+                    )
+
+                st.write("📦 Processing document…")
                 if uploaded_file.name.endswith('.zip'):
                     html_path = extract_zip(uploaded_file.getvalue(), tmp_dir)
                     if html_path is None:
@@ -327,6 +386,7 @@ if uploaded_file is not None:
 
                 output_name = (filename_input.strip() or default_name) + ".pdf"
 
+                st.write("🖨️ Rendering PDF…")
                 asyncio.run(generate_pdf(
                     html_path, output_path,
                     header_left=header_left_input,
@@ -348,15 +408,24 @@ if uploaded_file is not None:
                     pdf_author=pdf_author_input,
                 ))
 
-                with open(output_path, "rb") as f:
-                    st.success("PDF Generation Complete!")
-                    st.download_button(
-                        label="Download PDF",
-                        data=f,
-                        file_name=output_name,
-                        mime="application/pdf"
-                    )
+                pdf_bytes = open(output_path, 'rb').read()
+                status.update(label="✅ PDF ready!", state="complete", expanded=False)
+
             except Exception as e:
-                st.error(f"Processing Error: {e}")
+                status.update(label="❌ Error", state="error", expanded=True)
+                st.error(f"Processing error: {e}")
             finally:
                 shutil.rmtree(tmp_dir, ignore_errors=True)
+
+        if pdf_bytes:
+            file_size = len(pdf_bytes)
+            size_str  = f"{file_size/1024:.0f} KB" if file_size < 1024*1024 else f"{file_size/1024/1024:.1f} MB"
+            st.caption(f"📄 {output_name}  ·  {size_str}")
+            st.download_button(
+                label="⬇️ Download PDF",
+                data=pdf_bytes,
+                file_name=output_name,
+                mime="application/pdf",
+                use_container_width=True,
+            )
+            st.toast("PDF generated successfully!", icon="✅")
