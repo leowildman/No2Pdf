@@ -53,7 +53,6 @@ async def generate_pdf(
         @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
 
         @media print {{
-            @page {{ margin: 0 !important; }}
             hr {{ break-before: page; visibility: hidden; height: 0; margin: 0 !important; }}
 
             /* ROOT CAUSE FIX:
@@ -100,6 +99,16 @@ async def generate_pdf(
                 {line_height_css}
             }}
             img, figure {{ break-inside: avoid; max-width: 100% !important; }}
+            /* Notion's cover image uses max-height:30vh which behaves differently
+               in Playwright's print context vs screen, clipping the top of the image.
+               Fix it to a sensible fixed height so it renders fully. */
+            .page-cover-image {{
+                max-height: 250px !important;
+                width: 100% !important;
+                object-fit: cover !important;
+                object-position: center !important;
+                display: block !important;
+            }}
         }}
     </style>
     """
